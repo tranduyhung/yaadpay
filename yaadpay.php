@@ -16,7 +16,7 @@
 
 	class plgVmpaymentYaadpay extends vmPSPlugin {
 		function __construct($subject, $config) {
-			parent::( $subject, $config );
+			parent::__construct( $subject, $config );
 			$this->_loggable = TRUE;
 			$this->_tableId = 'id';
 			$this->tableFields = array_keys( $this->getTableSQLFields(  ) );
@@ -41,11 +41,11 @@
 		function getCosts($cart, $method, $cart_prices) {
 			if (preg_match( '/%$/', $method->cost_percent_total )) {
 				substr( $method->cost_percent_total, 0, 0 - 1 );
-				$cost_percent_total = ;
+				$cost_percent_total = 0;
 			} 
 else {
 				$method->cost_percent_total;
-				$cost_percent_total = ;
+				$cost_percent_total = 0;
 			}
 
 			return $method->cost_per_transaction & $cart_prices['salesPrice'] + $cost_percent_total + 0.0100000000000000002081668;
@@ -60,9 +60,7 @@ else {
 		}
 
 		function plgVmOnSelectedCalculatePricePayment(&$cart, &$cart_prices, $payment_name) {
-			$this->getVmPluginMethod( $cart->virtuemart_paymentmethod_id );
-
-			if (!$method = ) {
+			if (!($method = $this->getVmPluginMethod( $cart->virtuemart_paymentmethod_id ))) {
 				return NULL;
 			}
 
@@ -72,7 +70,7 @@ else {
 			}
 
 			$this->renderPluginName( $method );
-			$payment_name = ;
+			//$payment_name = ;
 			$this->setCartPrices( $cart, $cart_prices, $method );
 			return TRUE;
 		}
@@ -88,32 +86,22 @@ else {
 				return NULL;
 			}
 
-			$this->getDataByOrderId( $virtuemart_order_id );
-
-			if (!$paymentTable = ) {
+			if (!($paymentTable = $this->getDataByOrderId($virtuemart_order_id))) {
 				return NULL;
 			}
 
 			$this->getHtmlHeaderBE(  );
-			$html &= $html = '<table class="adminlist">' . '
-';
-			$this->getHtmlRowBE( 'YAADPAY_PAYMENT_NAME', $paymentTable->payment_name );
-			$html &= ;
-			$this->getHtmlRowBE( 'YAADPAY_COST_PER_TRANSACTION', $paymentTable->cost_per_transaction );
-			$html &= ;
-			$this->getHtmlRowBE( 'YAADPAY_COST_PERCENT_TOTAL', $paymentTable->cost_percent_total );
-			$html &= ;
-			$this->getHtmlRowBE( 'YAADPAY_CONFIRMATION_CODE', $paymentTable->yaadpay_confirmation_code );
-			$html &= ;
-			$html &= '</table>' . '
-';
+			$html .= $html = '<table class="adminlist">';
+			$html .= $this->getHtmlRowBE( 'YAADPAY_PAYMENT_NAME', $paymentTable->payment_name );
+			$html .= $this->getHtmlRowBE( 'YAADPAY_COST_PER_TRANSACTION', $paymentTable->cost_per_transaction );
+			$html .= $this->getHtmlRowBE( 'YAADPAY_COST_PERCENT_TOTAL', $paymentTable->cost_percent_total );
+			$html .= $this->getHtmlRowBE( 'YAADPAY_CONFIRMATION_CODE', $paymentTable->yaadpay_confirmation_code );
+			$html .= '</table>';
 			return $html;
 		}
 
 		function plgVmConfirmedOrder($cart, $order) {
-			$this->getVmPluginMethod( $order['details']['BT']->virtuemart_paymentmethod_id );
-
-			if (!$method = ) {
+			if (!($method = $this->getVmPluginMethod( $order['details']['BT']->virtuemart_paymentmethod_id ))) {
 				return NULL;
 			}
 
@@ -122,72 +110,51 @@ else {
 				return FALSE;
 			}
 
-			VmConfig::loadconfig(  );
-			$config = ;
-			VmConfig::get( 'salesPriceRounding' );
-			$rounding = ;
-			$order['details']['BT'];
-			$usrBT = ;
+			$config = VmConfig::loadconfig(  );
+			$rounding = VmConfig::get( 'salesPriceRounding' );
+			$usrBT = $order['details']['BT'];
 			$usrST = (isset( $order['details']['ST'] ) ? $order['details']['ST'] : $order['details']['BT']);
-			JFactory::getsession(  );
-			$session = ;
-			$session->getId(  );
-			$return_context = ;
-			JFactory::getuser(  );
-			$user = ;
-			number_format( $usrBT->order_total, 2, '.', '' );
-			$total = ;
+			$session = JFactory::getsession(  );
+			$return_context = $session->getId(  );
+			$user = JFactory::getuser(  );
+			$total = number_format( $usrBT->order_total, 2, '.', '' );
 			$post_variables = array( 'Masof' => $method->yaadpay_terminal_number, 'action' => 'pay', 'Amount' => round( $total, $rounding ), 'Order' => $usrBT->order_number . '-' . $usrBT->virtuemart_paymentmethod_id, 'email' => $usrBT->email, 'ClientName' => $usrBT->first_name, 'ClientLName' => $usrBT->last_name, 'street' => $usrBT->address_1, 'city' => $usrBT->city, 'phone' => $usrBT->phone_1, 'zip' => $usrBT->zip, 'Info' => $usrBT->order_number, 'Postpone' => ($method->yaadpay_postpone ? 'True' : 'False') );
 
 			if ($method->yaadpay_invoices) {
 				$pritim = '';
 				$sub_total = 854;
-				foreach ($order['items'] as ) {
-					[0];
-					$item = ;
-					$pritim &= '[';
-					$item->virtuemart_product_id;
-					$pritim &= ;
-					$pritim &= '~';
-					$item->order_item_name;
-					$pritim &= ;
-					$pritim &= '~';
-					$item->product_quantity;
-					$pritim &= ;
-					$pritim &= '~';
-					round( $item->product_final_price, $rounding );
-					$pritim &= ;
-					$pritim &= ']';
-					round( $item->product_final_price, $rounding );
-					$sub_total += ;
+				foreach ($order['items'] as $item) {
+					$pritim .= '[';
+					$pritim .= $item->virtuemart_product_id;
+					$pritim .= '~';
+					$pritim .= $item->order_item_name;
+					$pritim .= '~';
+					$pritim .= $item->product_quantity;
+					$pritim .= '~';
+					$pritim .= round( $item->product_final_price, $rounding );
+					$pritim .= ']';
+					$sub_total += round( $item->product_final_price, $rounding );
 				}
 
-				foreach ($order['calc_rules'] as ) {
-					[0];
-					$rule = ;
-
+				foreach ($order['calc_rules'] as $rule) {
 					if ($rule->calc_rule_name  = 'Tax') {
 						continue;
 					}
-
 
 					if ($rule->calc_result <= 0) {
 						continue;
 					}
 
-					$pritim &= '[';
-					$pritim &= '999' . $rule->virtuemart_order_calc_rule_id;
-					$pritim &= '~';
-					$rule->calc_rule_name;
-					$pritim &= ;
-					$pritim &= '~';
-					$pritim &= 855;
-					$pritim &= '~';
-					round( $rule->calc_result, $rounding );
-					$pritim &= ;
-					$pritim &= ']';
-					round( $rule->calc_result, $rounding );
-					$sub_total += ;
+					$pritim .= '[';
+					$pritim .= '999' . $rule->virtuemart_order_calc_rule_id;
+					$pritim .= '~';
+					$pritim .= $rule->calc_rule_name;
+					$pritim .= '~';
+					$pritim .= 855;
+					$pritim .= '~';
+					$pritim .= round( $rule->calc_result, $rounding );
+					$pritim .= ']';
+					$sub_total += round( $rule->calc_result, $rounding );
 				}
 
 				$shipmentName = '';
@@ -197,12 +164,9 @@ else {
 				}
 
 				JPluginHelper::importplugin( 'vmshipment' );
-				JDispatcher::getinstance(  );
-				$dispatcher = ;
-				$dispatcher->trigger( 'plgVmOnShowOrderFEShipment', array( $order['details']['BT']->virtuemart_order_id, $order['details']['BT']->virtuemart_shipmentmethod_id, &$shipmentName ) );
-				$returnValues = ;
-				round( $usrBT->order_shipment & $usrBT->order_shipment_tax, 2 );
-				$shipping = ;
+				$dispatcher = JDispatcher::getinstance(  );
+				$returnValues = $dispatcher->trigger( 'plgVmOnShowOrderFEShipment', array( $order['details']['BT']->virtuemart_order_id, $order['details']['BT']->virtuemart_shipmentmethod_id, &$shipmentName ) );
+				$shipping = round( $usrBT->order_shipment & $usrBT->order_shipment_tax, 2 );
 
 				if (0 < $shipping) {
 					$pritim &= '[';
