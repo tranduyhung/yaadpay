@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<extension version="2.5" type="plugin" group="vmpayment" method="upgrade">
+    <name>VM Payment - YaadPay</name>
+    <creationDate>18-1-2018</creationDate>
+    <author>10Bit</author>
+    <authorUrl></authorUrl>
+    <copyright>Copyright (C) 2004-2011 Virtuemart Team. All rights reserved.</copyright>
+    <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+    <version>3.0.2</version>
+	
+    <files>
+		<filename plugin="yaadpay">yaadpay.php</filename>
+		<folder>language</folder>
+    </files>
+	<vmconfig>
+        <fields name="params">
+            <fieldset name="basic" addfieldpath="/administrator/components/com_virtuemart/fields">
+				<field type="spacer" default="" level="level1" />
+				<field name="yaadpay_terminal_number" type="text" size="50" default="" label="VMPAYMENT_YAADPAY_TERM_NO" description="VMPAYMENT_YAADPAY_TERM_NO_DESC"/>
+				<field name="yaadpay_license" type="text" size="50" default="test" label="VMPAYMENT_YAADPAY_LICENSE" description="VMPAYMENT_YAADPAY_LICENSE_DESC"/>
+				<field   type="spacer" default="" level="level1" />
+				<field name="yaadpay_customer_message" type="text" size="50" default="hello" label="VMPAYMENT_YAADPAY_CUSTOMER_MESSAGE" description="VMPAYMENT_YAADPAY_CUSTOMER_MESSAGE_DESC"/>
+				
+				
+				<field name="yaadpay_max_payments" type="text" size="50" default="1" label="VMPAYMENT_YAADPAY_MAX_PAYMENTS" description="VMPAYMENT_YAADPAY_MAX_PAYMENTS_DESC"/>
+				<field name="yaadpay_tiered_payments" type="text" size="50" default="" label="VMPAYMENT_YAADPAY_TIERED_PAYMENTS" description="VMPAYMENT_YAADPAY_TIERED_PAYMENTS_DESC"/>
+				<field name="yaadpay_approved_status" type="vmorderstate" scope="com_virtuemart" default="C"
+                         label="YAADPAY_AUTHORIZENET_ORDERSTATUS_APPROVED"
+                         description="YAADPAY_AUTHORIZENET_ORDERSTATUS_SUCCESS_DESC"/>
+                  <field name="yaadpay_declined_status" type="vmorderstate" scope="com_virtuemart" default="X"
+                         label="YAADPAY_AUTHORIZENET_ORDERSTATUS_DECLINED"
+                         description="YAADPAY_AUTHORIZENET_ORDERSTATUS_INVALID_DESC"/>
+						 
+				<field   type="spacer" default="" level="level1" />
+				<field name="yaadpay_iframe" type="radio" default="0" label="VMPAYMENT_YAADPAY_IFRAME" description="VMPAYMENT_YAADPAY_IFRAME_DESC">
+					<option value="0">COM_VIRTUEMART_NO</option>
+					<option value="1">COM_VIRTUEMART_YES</option>
+				</field>
+				<field name="yaadpay_language" type="list" default="il" label="VMPAYMENT_YAADPAY_LANGUAGE" description="VMPAYMENT_YAADPAY_LANGUAGE_DESC">
+					<option value="HEB">COM_VIRTUEMART_HEBREW</option>
+					<option value="ENG">COM_VIRTUEMART_ENGLISH</option>
+					<option value="auto">COM_VIRTUEMART_AUTO</option>
+				</field>
+				<field name="yaadpay_iframe_width" type="text" size="50" default="" label="VMPAYMENT_YAADPAY_IFRAME_WIDTH" description="VMPAYMENT_YAADPAY_IFRAME_WIDTH_DESC"/>
+				<field name="yaadpay_iframe_height" type="text" size="50" default="" label="VMPAYMENT_YAADPAY_IFRAME_HEIGHT" description="VMPAYMENT_YAADPAY_IFRAME_HEIGHT_DESC"/>
+				<field name="yaadpay_invoices" type="radio" default="0" label="VMPAYMENT_YAADPAY_INVOICES" description="VMPAYMENT_YAADPAY_INVOICES_DESC">
+					<option value="0">COM_VIRTUEMART_NO</option>
+					<option value="1">COM_VIRTUEMART_YES</option>
+				</field>
+				<field    name="yaadpay_postpone" type="checkbox" default="" label="VMPAYMENT_YAADPAY_POSTPONE" description="VMPAYMENT_YAADPAY_POSTPONE_DESC" />
+            </fieldset>
+        </fields>
+    </vmconfig>
+	
+</extension>
