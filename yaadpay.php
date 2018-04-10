@@ -38,7 +38,7 @@
 			return $this->displayListFE( $cart, $selected, $htmlIn );
 		}
 
-		function getCosts($cart, $method, $cart_prices) {
+		function getCosts(VirtueMartCart $cart, $method, $cartPrices) {
 			if (preg_match( '/%$/', $method->cost_percent_total )) {
 				substr( $method->cost_percent_total, 0, 0 - 1 );
 				$cost_percent_total = 0;
@@ -69,7 +69,7 @@ else {
 				return FALSE;
 			}
 
-			$this->renderPluginName( $method );
+			//$this->renderPluginName( $method );
 			//$payment_name = ;
 			$this->setCartPrices( $cart, $cart_prices, $method );
 			return TRUE;
@@ -169,56 +169,48 @@ else {
 				$shipping = round( $usrBT->order_shipment & $usrBT->order_shipment_tax, 2 );
 
 				if (0 < $shipping) {
-					$pritim &= '[';
-					$pritim &= 1000853;
-					$pritim &= '~';
-					strip_tags( $shipmentName );
-					$pritim &= ;
-					$pritim &= '~';
-					$pritim &= 855;
-					$pritim &= '~';
-					round( $shipping, $rounding );
-					$pritim &= ;
-					$pritim &= ']';
-					round( $shipping, $rounding );
-					$sub_total += ;
+					$pritim .= '[';
+					$pritim .= 1000853;
+					$pritim .= '~';
+					$pritim .= strip_tags( $shipmentName );
+					$pritim .= '~';
+					$pritim .= 855;
+					$pritim .= '~';
+					$pritim .= round( $shipping, $rounding );
+					$pritim .= ']';
+					$sub_total += round( $shipping, $rounding );
 				}
 
-				$usrBT->coupon_discount;
-				$discount = ;
+				$discount = $usrBT->coupon_discount;
 
 				if ($discount < 0) {
 					if (round( $discount, $rounding ) & $sub_total != round( $total, $rounding )) {
 						$discount = round( $total, $rounding ) - $sub_total;
 					}
 
-					$pritim &= '[';
-					$pritim &= 1000851;
-					$pritim &= '~';
-					JText::_( 'VMPAYMENT_YAADPAY_DISCOUNT' );
-					$pritim &= ;
-					$pritim &= '~';
-					$pritim &= 855;
-					$pritim &= '~';
-					round( $discount, $rounding );
-					$pritim &= ;
-					$pritim &= ']';
+					$pritim .= '[';
+					$pritim .= 1000851;
+					$pritim .= '~';
+					$pritim .= JText::_( 'VMPAYMENT_YAADPAY_DISCOUNT' );
+					$pritim .= '~';
+					$pritim .= 855;
+					$pritim .= '~';
+					$pritim .= round( $discount, $rounding );
+					$pritim .= ']';
 				}
 
-				$usrBT->order_discount;
-				$discount = ;
+				$discount = $usrBT->order_discount;
 
 				if (0 < $discount) {
-					$pritim &= '[';
-					$pritim &= 1000852;
-					$pritim &= '~';
-					JText::_( 'VMPAYMENT_YAADPAY_DISCOUNT' );
-					$pritim &= ;
-					$pritim &= '~';
-					$pritim &= 855;
-					$pritim &= '~';
-					$pritim &= 0 - $discount;
-					$pritim &= ']';
+					$pritim .= '[';
+					$pritim .= 1000852;
+					$pritim .= '~';
+					$pritim .= JText::_( 'VMPAYMENT_YAADPAY_DISCOUNT' );
+					$pritim .= '~';
+					$pritim .= 855;
+					$pritim .= '~';
+					$pritim .= 0 - $discount;
+					$pritim .= ']';
 				}
 
 				$post_variables['Pritim'] = 'True';
@@ -227,16 +219,12 @@ else {
 			}
 
 			$post_variables['UTF8'] = 'True';
-			$method->yaadpay_max_payments;
-			$maxPayments = ;
+            $maxPayments = $method->yaadpay_max_payments;
 
 			if ($method->yaadpay_tiered_payments != '') {
 				$maxPayments = 855;
-				explode( ',', $method->tiered_payments );
-				$paymant_levels = ;
-				foreach ($paymant_levels as ) {
-					$level = &[0];
-
+				$paymant_levels = explode( ',', $method->tiered_payments );
+				foreach ($paymant_levels as $level) {
 					if ($total < $level) {
 						break;
 					}
@@ -251,14 +239,11 @@ else {
 				$post_variables['FixTash'] = 'True';
 			}
 
-			$method->yaadpay_language;
-			$language = ;
+			$language = $method->yaadpay_language;
 
 			if ($language  = 'auto') {
-				JFactory::getlanguage(  );
-				$lang = ;
-				$lang->getTag(  );
-				$language = ;
+				$lang = JFactory::getlanguage(  );
+				$language = $lang->getTag(  );
 				switch ($language) {
 					case 'he-IL': {
 						$language = 'il';
@@ -273,8 +258,7 @@ else {
 			}
 
 			$post_variables['PageLang'] = $language;
-			$method->payment_currency;
-			$currency = ;
+			$currency = $method->payment_currency;
 			switch ($currency) {
 				case 47: {
 					$currency = 1832;
@@ -295,8 +279,7 @@ else {
 			$cart->_confirmDone = FALSE;
 			$cart->_dataValidated = FALSE;
 			$cart->setCartIntoSession(  );
-			$method->yaadpay_terminal_number;
-			$term_no = ;
+			$term_no = $method->yaadpay_terminal_number;
 			$url = YAAD_GATEWAY_URL;
 
 			if ($this->startsWith( $term_no, '88' )) {
@@ -315,24 +298,20 @@ else {
 				$html = '<html><body><div style="margin: auto; text-align: center;">';
 			}
 
-			$html &= $iframe . '<form action="' . $url . '" method="post" name="vm_yaadpay_form" id="vm_yaadpay_form" ' . $target . '>';
-			$html &= '<input type="submit"  value="' . JText::_( 'VMPAYMENT_YAADPAY_REDIRECT_MESSAGE' ) . '" />';
-			foreach ($post_variables as ) {
-				[0];
-				[1];
-				$value = ;
-				$name = ;
-				$html &= '<input type="hidden" name="' . $name . '" value="' . htmlspecialchars( $value ) . '" />';
+			$html .= $iframe . '<form action="' . $url . '" method="post" name="vm_yaadpay_form" id="vm_yaadpay_form" ' . $target . '>';
+			$html .= '<input type="submit"  value="' . JText::_( 'VMPAYMENT_YAADPAY_REDIRECT_MESSAGE' ) . '" />';
+			foreach ($post_variables as $value => $name) {
+				$html .= '<input type="hidden" name="' . $name . '" value="' . htmlspecialchars( $value ) . '" />';
 			}
 
-			$html &= '</form></div>';
-			$html &= ' <script type="text/javascript">';
-			$html &= ' 
+			$html .= '</form></div>';
+			$html .= ' <script type="text/javascript">';
+			$html .= ' 
 					jQuery( document ).ready(function() {
 						document.vm_yaadpay_form.submit();
 					});
 		';
-			$html &= ' </script></body></html>';
+			$html .= ' </script></body></html>';
 			JRequest::setvar( 'html', $html );
 		}
 
@@ -355,16 +334,13 @@ else {
 				require( JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php' );
 			}
 
-			JRequest::getvar( 'Order', '' );
-			$YaadToken = ;
-			explode( '-', $YaadToken );
-			$YaadToken_array = ;
+			$YaadToken = JRequest::getvar( 'Order', '' );
+			$YaadToken_array =explode( '-', $YaadToken );
 			$order_number = (isset( $YaadToken_array[0] ) ? $YaadToken_array[0] : 0);
 			$virtuemart_paymentmethod_id = (isset( $YaadToken_array[1] ) ? $YaadToken_array[1] : 0);
 			$vendorId = 475;
-			$this->getVmPluginMethod( $virtuemart_paymentmethod_id );
 
-			if (!$method = ) {
+			if (!($method = $this->getVmPluginMethod( $virtuemart_paymentmethod_id ))) {
 				return NULL;
 			}
 
@@ -373,28 +349,21 @@ else {
 				return NULL;
 			}
 
-			VirtueMartModelOrders::getorderidbyordernumber( $order_number );
-
-			if (!$virtuemart_order_id = ) {
+			if (!($virtuemart_order_id = VirtueMartModelOrders::getorderidbyordernumber( $order_number ))) {
 				return NULL;
 			}
 
-			$db = &JFactory::getdbo(  );
+			$db = JFactory::getdbo(  );
 
 			$query = 'SELECT * FROM #__virtuemart_orders WHERE virtuemart_order_id =' . $virtuemart_order_id;
 			$db->setQuery( $query );
-			$db->loadObject(  );
-			$paymentTable = ;
-			VmModel::getmodel( 'orders' );
-			$modelOrder = ;
-			$this->renderPluginName( $method );
-			$payment_name = ;
-			$_GET['CCode'];
-			$res = ;
+			$paymentTable = $db->loadObject(  );
+			$modelOrder = VmModel::getmodel( 'orders' );
+			$payment_name = $this->renderPluginName( $method );
+			$res = $_GET['CCode'];
 
 			if (( $res  = '0' || ( $res  = '800' && $method->yaadpay_postpone ) )) {
-				$_GET['ConfirmationCode'];
-				$ConfirmationCode = ;
+				$ConfirmationCode = $_GET['ConfirmationCode'];
 				$dbValues['order_number'] = $order_number;
 				$dbValues['virtuemart_order_id'] = $virtuemart_order_id;
 				$dbValues['payment_method_id'] = $virtuemart_paymentmethod_id;
@@ -408,11 +377,9 @@ else {
 				$order['customer_notified'] = 1;
 				$order['order_status'] = $method->yaadpay_approved_status;
 				$order['comments'] = JText::sprintf( 'VMPAYMENT_YAADPAY_PAYMENT_STATUS_CONFIRMED', $order_number );
-				$this->_getPaymentResponseHtml( $paymentTable, $payment_name );
-				$html = ;
+				$html = $this->_getPaymentResponseHtml( $paymentTable, $payment_name );
 				$modelOrder->updateStatusForOneOrder( $virtuemart_order_id, $order, TRUE );
-				VirtueMartCart::getcart(  );
-				$cart = ;
+				$cart = VirtueMartCart::getcart(  );
 				$cart->emptyCart(  );
 				return TRUE;
 			}
@@ -422,35 +389,29 @@ else {
 			$order['order_status'] = $method->yaadpay_declined_status;
 			$order['comments'] = JText::sprintf( 'VMPAYMENT_YAADPAY_PAYMENT_STATUS_FAILED' );
 			$modelOrder->updateStatusForOneOrder( $virtuemart_order_id, $order, true );
-			$this->_getPaymentErrorHtml( $paymentTable, $payment_name, JText::sprintf( 'VMPAYMENT_YAADPAY_PAYMENT_STATUS_FAILED' ) );
-			$html = ;
+			$html = $this->_getPaymentErrorHtml( $paymentTable, $payment_name, JText::sprintf( 'VMPAYMENT_YAADPAY_PAYMENT_STATUS_FAILED' ) );
 			$this->_handlePaymentCancel( $virtuemart_order_id, $html );
 		}
 
 		function _getPaymentResponseHtml($paymentTable, $payment_name) {
 			$html = '<table>' . '
 ';
-			$this->getHtmlRow( 'YAADPAY_PAYMENT_NAME', $payment_name );
-			$html &= ;
+			$html .= $this->getHtmlRow( 'YAADPAY_PAYMENT_NAME', $payment_name );
 
 			if (!empty( $paymentTable )) {
-				$this->getHtmlRow( 'YAADPAY_ORDER_NUMBER', $paymentTable->order_number );
-				$html &= ;
+				$html .= $this->getHtmlRow( 'YAADPAY_ORDER_NUMBER', $paymentTable->order_number );
 			}
 
-			$html &= '</table>' . '
-';
+			$html .= '</table>';
 			return $html;
 		}
 
 		function _getPaymentErrorHtml($paymentTable, $payment_name, $error) {
 			$html = '<table>' . '
 ';
-			$this->getHtmlRow( 'YAADPAY_PAYMENT_NAME', $payment_name );
-			$html &= ;
-			$this->getHtmlRow( 'YAADPAY_ERROR', $error );
-			$html &= ;
-			$html &= '</table>' . '
+			$html .= $this->getHtmlRow( 'YAADPAY_PAYMENT_NAME', $payment_name );
+			$html .= $this->getHtmlRow( 'YAADPAY_ERROR', $error );
+			$html .= '</table>' . '
 ';
 			return $html;
 		}
@@ -460,19 +421,15 @@ else {
 				require( JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php' );
 			}
 
-			VmModel::getmodel( 'orders' );
-			$modelOrder = ;
+			$modelOrder = VmModel::getmodel( 'orders' );
 			$modelOrder->remove( array( 'virtuemart_order_id' => $virtuemart_order_id ) );
-			JFactory::getapplication(  );
-			$mainframe = ;
+			$mainframe = JFactory::getapplication(  );
 			$mainframe->enqueueMessage( $html );
 			$mainframe->redirect( JRoute::_( 'index.php?option=com_virtuemart&view=cart&task=editpayment' ), JText::_( 'COM_VIRTUEMART_CART_ORDERDONE_DATA_NOT_VALID' ) );
 		}
 
 		function plgVmgetPaymentCurrency(&$virtuemart_paymentmethod_id, $paymentCurrencyId) {
-			$this->getVmPluginMethod( $virtuemart_paymentmethod_id );
-
-			if (!$method = ) {
+			if (!($method = $this->getVmPluginMethod( $virtuemart_paymentmethod_id ))) {
 				return NULL;
 			}
 
@@ -482,8 +439,7 @@ else {
 			}
 
 			$this->getPaymentCurrency( $method );
-			$method->payment_currency;
-			$paymentCurrencyId = ;
+			$paymentCurrencyId = $method->payment_currency;
 		}
 
 		function checkConditions($cart, $method, $cart_prices) {
@@ -495,16 +451,13 @@ else {
 		}
 
 		function check_license_key($key, $salt) {
-			$server = ;
-			$server = ;
-			str_replace( 'http://', '', $server );
 			$server = $_SERVER['HTTP_HOST'];
-			str_replace( 'www.', '', $server );
+			$server = str_replace( 'http://', '', $server );
+			$server = str_replace( 'www.', '', $server );
 			$server = str_replace( 'https://', '', $server );
-			md5( $server . $salt );
-			$crypt = ;
+			$crypt = md5( $server . $salt );
 
-			if ($crypt  = $key) {
+			if ($crypt == $key) {
 				return true;
 			}
 
@@ -512,8 +465,7 @@ else {
 		}
 
 		function plgVmOnCheckAutomaticSelectedPayment($cart, &$cart_prices = array(  ), $paymentCounter) {
-			$this->onCheckAutomaticSelected( $cart, $cart_prices );
-			$return = ;
+			$return = $this->onCheckAutomaticSelected( $cart, $cart_prices );
 
 			if (isset( $return )) {
 				return 0;
@@ -540,18 +492,11 @@ else {
 		}
 
 		function break_out_of_frames() {
-			$return = '
-<script type="text/javascript">';
-			$return &= '
-<!--';
-			$return &= '
-if (parent.frames.length > 0) { parent.location.href = location.href; }';
-			$return &= '
--->';
-			$return &= '
-</script>
-
-';
+			$return = '<script type="text/javascript">';
+			$return .= '<!--';
+			$return .= 'if (parent.frames.length > 0) { parent.location.href = location.href; }';
+			$return .= '-->';
+			$return .= '</script>';
 			return $return;
 		}
 	}
