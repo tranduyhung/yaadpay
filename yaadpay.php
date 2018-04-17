@@ -20,8 +20,24 @@
 			$this->_loggable = TRUE;
 			$this->_tableId = 'id';
 			$this->tableFields = array_keys( $this->getTableSQLFields(  ) );
-			$this->getVarsToPush(  );
-			$varsToPush = $this->_tablepkey = 'id';
+			$this->_tablepkey = 'id';
+
+			$varsToPush = [
+				'yaadpay_terminal_number' => array('', 'char'),
+				'yaadpay_license' => array('', 'char'),
+				'yaadpay_customer_message' => array('', 'char'),
+				'yaadpay_max_payments' => array('', 'char'),
+				'yaadpay_tiered_payments' => array('', 'char'),
+				'yaadpay_approved_status' => array('', 'char'),
+				'yaadpay_declined_status' => array('', 'char'),
+				'yaadpay_iframe' => array('', 'char'),
+				'yaadpay_language' => array('', 'char'),
+				'yaadpay_iframe_width' => array('', 'char'),
+				'yaadpay_iframe_height' => array('', 'char'),
+				'yaadpay_invoices' => array('', 'char'),
+				'yaadpay_postpone' => array('', 'char'),
+			];
+
 			$this->setConfigParameterable( $this->_configTableFieldName, $varsToPush );
 		}
 
@@ -34,36 +50,40 @@
 			return $SQLfields;
 		}
 
-		function plgVmDisplayListFEPayment($cart, &$selected = 0, $htmlIn) {
+		function plgVmDisplayListFEPayment(VirtueMartCart $cart, $selected, &$htmlIn) {
 			return $this->displayListFE( $cart, $selected, $htmlIn );
 		}
 
 		function getCosts(VirtueMartCart $cart, $method, $cartPrices) {
-			if (preg_match( '/%$/', $method->cost_percent_total )) {
-				substr( $method->cost_percent_total, 0, 0 - 1 );
-				$cost_percent_total = 0;
-			} 
-else {
-				$method->cost_percent_total;
-				$cost_percent_total = 0;
+			if (isset($method->cost_percent_total)) {
+				if (preg_match('/%$/', $method->cost_percent_total)) {
+					$costPercentTotal = substr($method->cost_percent_total, 0, -1);
+				} else {
+					$costPercentTotal = $method->cost_percent_total;
+				}
+			} else {
+				$costPercentTotal = 0;
 			}
 
-			return $method->cost_per_transaction & $cart_prices['salesPrice'] + $cost_percent_total + 0.0100000000000000002081668;
+			if (!isset($method->cost_per_transaction)) {
+				$method->cost_per_transaction = 0;
+			}
+
+			return ($method->cost_per_transaction + ($cartPrices['salesPrice'] * $costPercentTotal * 0.01));
 		}
 
 		function plgVmOnStoreInstallPaymentPluginTable($jplugin_id) {
 			return parent::onstoreinstallplugintable( $jplugin_id );
 		}
 
-		function plgVmOnSelectCheckPayment(&$cart, $msg) {
+		function plgVmOnSelectCheckPayment(VirtueMartCart $cart) {
 			return $this->OnSelectCheck( $cart );
 		}
 
-		function plgVmOnSelectedCalculatePricePayment(&$cart, &$cart_prices, $payment_name) {
-			if (!($method = $this->getVmPluginMethod( $cart->virtuemart_paymentmethod_id ))) {
-				return NULL;
+		function plgVmOnSelectedCalculatePricePayment(VirtueMartCart $cart, array &$cart_prices, &$cart_prices_name) {
+			if (!($method = $this->getVmPluginMethod($cart->virtuemart_paymentmethod_id))) {
+				return FALSE;
 			}
-
 
 			if (!$this->selectedThisElement( $method->payment_element )) {
 				return FALSE;
@@ -73,12 +93,6 @@ else {
 			//$payment_name = ;
 			$this->setCartPrices( $cart, $cart_prices, $method );
 			return TRUE;
-		}
-
-		function renderPluginName($plugin) {
-			$return = '';
-			$plugin_name = $this->_psType . '_name';
-			return $plugin->$plugin_name;
 		}
 
 		function plgVmOnShowOrderBEPayment($virtuemart_order_id, $virtuemart_payment_id) {
@@ -219,7 +233,7 @@ else {
 			}
 
 			$post_variables['UTF8'] = 'True';
-            $maxPayments = $method->yaadpay_max_payments;
+			$maxPayments = $method->yaadpay_max_payments;
 
 			if ($method->yaadpay_tiered_payments != '') {
 				$maxPayments = 855;
@@ -246,12 +260,12 @@ else {
 				$language = $lang->getTag(  );
 				switch ($language) {
 					case 'he-IL': {
-						$language = 'il';
+						$language = 'HEB';
 						break;
 					}
 
 					default: {
-						$language = 'us';
+						$language = 'ENG';
 						break;
 					}
 				}
@@ -289,6 +303,7 @@ else {
 			$target = '';
 
 			if ($method->yaadpay_iframe) {
+				$html = '';
 				$width = (!empty( $method->yaadpay_iframe_width ) ? $method->yaadpay_iframe_width . 'px' : '100%');
 				$height = (!empty( $method->yaadpay_iframe_height ) ? $method->yaadpay_iframe_height . 'px' : '800px');
 				$iframe = '<iframe style="border:none" name="chekout_frame"  id="chekout_frame" width="' . $width . '" height="' . $height . '" scrolling="no" seamless></iframe>  ';
@@ -296,11 +311,12 @@ else {
 			} 
 else {
 				$html = '<html><body><div style="margin: auto; text-align: center;">';
+				$iframe = '';
 			}
 
 			$html .= $iframe . '<form action="' . $url . '" method="post" name="vm_yaadpay_form" id="vm_yaadpay_form" ' . $target . '>';
 			$html .= '<input type="submit"  value="' . JText::_( 'VMPAYMENT_YAADPAY_REDIRECT_MESSAGE' ) . '" />';
-			foreach ($post_variables as $value => $name) {
+			foreach ($post_variables as $name => $value) {
 				$html .= '<input type="hidden" name="' . $name . '" value="' . htmlspecialchars( $value ) . '" />';
 			}
 
@@ -428,7 +444,7 @@ else {
 			$mainframe->redirect( JRoute::_( 'index.php?option=com_virtuemart&view=cart&task=editpayment' ), JText::_( 'COM_VIRTUEMART_CART_ORDERDONE_DATA_NOT_VALID' ) );
 		}
 
-		function plgVmgetPaymentCurrency(&$virtuemart_paymentmethod_id, $paymentCurrencyId) {
+		function plgVmgetPaymentCurrency($virtuemart_paymentmethod_id, $paymentCurrencyId) {
 			if (!($method = $this->getVmPluginMethod( $virtuemart_paymentmethod_id ))) {
 				return NULL;
 			}
@@ -464,31 +480,37 @@ else {
 			return false;
 		}
 
-		function plgVmOnCheckAutomaticSelectedPayment($cart, &$cart_prices = array(  ), $paymentCounter) {
-			$return = $this->onCheckAutomaticSelected( $cart, $cart_prices );
-
-			if (isset( $return )) {
-				return 0;
+		function plgVmOnCheckAutomaticSelectedPayment(VirtueMartCart $cart, array $cartPrices, &$paymentCounter)
+		{
+			if ($cartPrices === null) {
+				$cartPrices = [];
 			}
 
-			return NULL;
+			return $this->onCheckAutomaticSelected($cart, $cartPrices, $paymentCounter);
 		}
 
-		function plgVmOnShowOrderFEPayment($virtuemart_order_id, &$virtuemart_paymentmethod_id, $payment_name) {
-			$this->onShowOrderFE( $virtuemart_order_id, $virtuemart_paymentmethod_id, $payment_name );
-			return TRUE;
+		function plgVmOnShowOrderFEPayment($virtuemartOrderId, $virtuemartPaymentMethodId, &$paymentName)
+		{
+			$this->onShowOrderFE($virtuemartOrderId, $virtuemartPaymentMethodId, $paymentName);
 		}
 
-		function plgVmOnShowOrderPrintPayment($order_number, $method_id) {
-			return parent::onshoworderprint( $order_number, $method_id );
+		function plgVmonShowOrderPrintPayment($orderNumber, $method_id)
+		{
+			return $this->onShowOrderPrint($orderNumber, $method_id);
 		}
 
-		function plgVmDeclarePluginParamsPaymentVM3($data) {
-			return $this->declarePluginParams( 'payment', $data );
+		function plgVmDeclarePluginParamsPayment($name, $id, &$data)
+		{
+			return $this->declarePluginParams('payment', $name, $id, $data);
 		}
 
-		function plgVmSetOnTablePluginParamsPayment($name, &$id, $table) {
-			return $this->setOnTablePluginParams( $name, $id, $table );
+		function plgVmSetOnTablePluginParamsPayment($name, $id, &$table)
+		{
+			return $this->setOnTablePluginParams($name, $id, $table);
+		}
+
+		function plgVmDeclarePluginParamsPaymentVM3(&$data) {
+			return $this->declarePluginParams('payment', $data);
 		}
 
 		function break_out_of_frames() {
