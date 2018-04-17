@@ -36,6 +36,7 @@
 				'yaadpay_iframe_height' => array('', 'char'),
 				'yaadpay_invoices' => array('', 'char'),
 				'yaadpay_postpone' => array('', 'char'),
+				'yaadpay_currency' => array('', 'int'),
 			];
 
 			$this->setConfigParameterable( $this->_configTableFieldName, $varsToPush );
@@ -273,20 +274,9 @@
 
 			$post_variables['PageLang'] = $language;
 			$currency = $method->payment_currency;
-			switch ($currency) {
-				case 47: {
-					$currency = 1832;
-					break;
-				}
 
-				case 67: {
-					$currency = 855;
-					break;
-				}
-
-				case 144: {
-					$currency = 856;
-				}
+			if ($currency < 1 || $currency > 4) {
+				$currency = 1;
 			}
 
 			$post_variables['Coin'] = $currency;

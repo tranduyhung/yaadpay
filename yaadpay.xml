@@ -48,6 +48,12 @@
 					<option value="1">COM_VIRTUEMART_YES</option>
 				</field>
 				<field    name="yaadpay_postpone" type="checkbox" default="" label="VMPAYMENT_YAADPAY_POSTPONE" description="VMPAYMENT_YAADPAY_POSTPONE_DESC" />
+				<field name="yaadpay_currency" type="radio" default="1" label="VMPAYMENT_YAADPAY_CURRENCY" description="VMPAYMENT_YAADPAY_CURRENCY">
+					<option value="1">ILS</option>
+					<option value="2">USD</option>
+					<option value="3">EUR</option>
+					<option value="4">GBP</option>
+				</field>
             </fieldset>
         </fields>
     </vmconfig>
