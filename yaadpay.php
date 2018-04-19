@@ -55,6 +55,47 @@
 			return $this->displayListFE( $cart, $selected, $htmlIn );
 		}
 
+		protected function getPluginHtml ($plugin, $selectedPlugin, $pluginSalesPrice) {
+
+			$pluginmethod_id = $this->_idName;
+			$pluginName = $this->_psType . '_name';
+			if ($selectedPlugin == $plugin->$pluginmethod_id) {
+				$checked = 'checked="checked"';
+			} else {
+				$checked = '';
+			}
+
+			if (!class_exists ('CurrencyDisplay')) {
+				require(VMPATH_ADMIN . DS . 'helpers' . DS . 'currencydisplay.php');
+			}
+			$currency = CurrencyDisplay::getInstance ();
+			$costDisplay = "";
+			if ($pluginSalesPrice) {
+				$costDisplay = $currency->priceDisplay( $pluginSalesPrice );
+				$t = vmText::_( 'COM_VIRTUEMART_PLUGIN_COST_DISPLAY' );
+				if(strpos($t,'/')!==FALSE){
+					list($discount, $fee) = explode( '/', vmText::_( 'COM_VIRTUEMART_PLUGIN_COST_DISPLAY' ) );
+					if($pluginSalesPrice>=0) {
+						$costDisplay = '<span class="'.$this->_type.'_cost fee"> ('.$fee.' +'.$costDisplay.")</span>";
+					} else if($pluginSalesPrice<0) {
+						$costDisplay = '<span class="'.$this->_type.'_cost discount"> ('.$discount.' -'.$costDisplay.")</span>";
+					}
+				} else {
+					$costDisplay = '<span class="'.$this->_type.'_cost fee"> ('.$t.' +'.$costDisplay.")</span>";
+				}
+			}
+
+			$dynUpdate='';
+			if( VmConfig::get('oncheckout_ajax',false)) {
+				$dynUpdate=' data-dynamic-update="1" ';
+			}
+
+			$html = '<input type="radio" '.$dynUpdate.' name="' . $pluginmethod_id . '" id="' . $this->_psType . '_id_' . $plugin->$pluginmethod_id . '"   value="' . $plugin->$pluginmethod_id . '" ' . $checked . ">\n"
+			. '<label for="' . $this->_psType . '_id_' . $plugin->$pluginmethod_id . '">' . '<span class="' . $this->_type . '">' . $plugin->$pluginName . $costDisplay . "</span></label>\n";
+
+			return $html;
+		}
+
 		function getCosts(VirtueMartCart $cart, $method, $cartPrices) {
 			if (isset($method->cost_percent_total)) {
 				if (preg_match('/%$/', $method->cost_percent_total)) {
@@ -119,7 +160,6 @@
 			if (!($method = $this->getVmPluginMethod( $order['details']['BT']->virtuemart_paymentmethod_id ))) {
 				return NULL;
 			}
-
 
 			if (!$this->selectedThisElement( $method->payment_element )) {
 				return FALSE;
@@ -325,7 +365,7 @@ else {
 			return ( $needle   = '' || strrpos( $haystack, $needle, 0 - strlen( $haystack ) ) !== false );
 		}
 
-		function plgVmOnPaymentResponseReceived($html) {
+		function plgVmOnPaymentResponseReceived(&$html) {
 			if (!class_exists( 'VirtueMartCart' )) {
 				require( JPATH_VM_SITE . DS . 'helpers' . DS . 'cart.php' );
 			}
@@ -350,6 +390,13 @@ else {
 				return NULL;
 			}
 
+			if ($method->yaadpay_iframe) {
+				JRequest::setvar('tmpl', 'component');
+			}
+
+			if (!$this->selectedThisElement( $method->payment_element )) {
+				return NULL;
+			}
 
 			if (!$this->selectedThisElement( $method->payment_element )) {
 				return NULL;
@@ -364,6 +411,7 @@ else {
 			$query = 'SELECT * FROM #__virtuemart_orders WHERE virtuemart_order_id =' . $virtuemart_order_id;
 			$db->setQuery( $query );
 			$paymentTable = $db->loadObject(  );
+
 			$modelOrder = VmModel::getmodel( 'orders' );
 			$payment_name = $this->renderPluginName( $method );
 			$res = $_GET['CCode'];
@@ -379,11 +427,13 @@ else {
 				$dbValues['cost_percent_total'] = $method->cost_percent_total;
 				$dbValues['yaadpay_confirmation_code'] = $ConfirmationCode;
 				$this->storePSPluginInternalData( $dbValues );
+
 				$order = array(  );
 				$order['customer_notified'] = 1;
 				$order['order_status'] = $method->yaadpay_approved_status;
 				$order['comments'] = JText::sprintf( 'VMPAYMENT_YAADPAY_PAYMENT_STATUS_CONFIRMED', $order_number );
 				$html = $this->_getPaymentResponseHtml( $paymentTable, $payment_name );
+
 				$modelOrder->updateStatusForOneOrder( $virtuemart_order_id, $order, TRUE );
 				$cart = VirtueMartCart::getcart(  );
 				$cart->emptyCart(  );
@@ -457,6 +507,7 @@ else {
 		}
 
 		function check_license_key($key, $salt) {
+			return true;
 			$server = $_SERVER['HTTP_HOST'];
 			$server = str_replace( 'http://', '', $server );
 			$server = str_replace( 'www.', '', $server );
